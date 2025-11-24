@@ -3,7 +3,7 @@
 **Goal:** *5 programs per topic*
 ### Basic Topics:
 #### 1. Packages, Variables, and Functions
-Encompasses packages, imports, functions and Data Types
+Encompasses packages, imports, functions and Basic Data Types
 
 
 #### 2. Flow Control Statements

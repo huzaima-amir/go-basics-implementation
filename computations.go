@@ -1,5 +1,5 @@
 package main
-// used: switch cases, for loops, "while" loops, explored different imports and function implementations regarding data handling, conversion, computation.
+// used: switch cases, for loops, "while" loops, explored different function implementations regarding data handling, conversion, computation.
 import (
 //	"errors"
 	"fmt"

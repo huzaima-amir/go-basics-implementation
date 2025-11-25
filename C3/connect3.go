@@ -1,5 +1,5 @@
 package main
-// implementation of connect 3 game to apply topic 1, 2 and 3 concepts, including slices, structs, loops
+// implementation of connect 3 game to apply topic 1, 2 and 3 concepts, including slices, structs, loops, string handling, pointers
 
 // Players enter number of rounds -> players enter usernames -> outer loop for game round
 //  (empty board prints out, with current scores, players get turn one by one, loop exits if a player scores, or no more spaces left.)
@@ -28,14 +28,33 @@ func displayBoard(board [][]string) { //display board at the start of each round
 	}
 }
 
-func applyMove(board [][] string) { // to apply game move to board
-	
+type Coordinates struct {
+	x, y int
+}
+
+func applyMove(P1,P2 Player, count int,board [][] string) { // to apply game move to board
+	var currentPlayer Player
+	var c Coordinates
+
+	if count/2 == 0{
+		currentPlayer = P1
+	} else {
+		currentPlayer = P2
+	}
+	fmt.Println(currentPlayer.symbol, "make your move.\n x coordinate:")
+	fmt.Scan(&c.x) // x coordinate for input symbol
+	fmt.Println("y coordinate:")
+	fmt.Scan(&c.y)
+
+	board[c.x][c.y] = currentPlayer.symbol
+	checkRoundWinner(board)
 }
 
 // Helpers for ending round loop:
-func checkRoundWinner(board [][]string) bool { // check for a win to end round loop
-    return false
+func checkRoundWinner(board [][]string) bool { // check for a win to at each iteration of board to increase score and end round loop
+	return false
 }
+
 func hasEmptySpaces(board [][]string) bool { // to check for empty spaces on board to end the round, if no one scores
     for _, row := range board {
         for _, cell := range row {
@@ -47,7 +66,6 @@ func hasEmptySpaces(board [][]string) bool { // to check for empty spaces on boa
     return false
 }
 
-
 type Player struct{
 	symbol string 
 	score int
@@ -57,7 +75,9 @@ func main(){
 	var n int  // amount of game rounds
 	P1 := Player{"", 0}
 	P2 := Player{"", 0}
-	defer fmt.Println("Game Over!\n", "won with score:")
+	var winner Player 
+
+	defer fmt.Println("Game Over!\n", winner.symbol, "won, score:", winner.score)
 	fmt.Println("Enter number of game rounds:")
 	fmt.Scan(&n)
 	//fmt.Println(createBoard(n))
@@ -68,15 +88,26 @@ func main(){
 
 	for i := 0; i < n; i++ { //simulating game rounds
 		gameBoard := createBoard()
-		displayBoard(gameBoard)
-		for {
-
-
-			if checkRoundWinner(gameBoard) || hasEmptySpaces(gameBoard){
+		count := 0
+		
+		for { //loops forever unless if condition for break is true
+			if checkRoundWinner(gameBoard) || !hasEmptySpaces(gameBoard){
 				break // end looping turns if someone wins or no more empty spaces
 			}
+			displayBoard(gameBoard)
+			fmt.Println(P1.symbol, "score:", P1.score, P2.symbol, "symbol:",)
+			applyMove(P1,P2,count, gameBoard)
+			count ++
 		}
 		}
+	switch{
+	case P1.score > P2.score:
+		winner = P1
+	case P2.score > P1.score:
+		winner = P2
+	case P2.score == P1.score:
+		winner = Player{"Draw! no one ",P1.score}
+	}
 	}
 
 

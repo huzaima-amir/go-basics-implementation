@@ -111,7 +111,6 @@ func main(){
 	P2 := Player{"", 0}
 	var winner Player  // winner based on score comparison at the end of all rounds
 
-	defer fmt.Println("Game Over!\n", winner.symbol, "won, score:", winner.score)
 
 	fmt.Println("Enter number of game rounds:")
 	fmt.Scan(&n)
@@ -135,6 +134,7 @@ func main(){
 			count ++
 		}
 		}
+		
 	switch{
 	case P1.score > P2.score:
 		winner = P1
@@ -143,6 +143,8 @@ func main(){
 	case P2.score == P1.score:
 		winner = Player{"Draw! no one ",P1.score}
 	}
+
+	fmt.Println("Game Over!\n", winner.symbol, "won, score:", winner.score)
 	}
 
 

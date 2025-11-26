@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"math"
 	// 	"math/rand"
-//		"strconv"
+		"strconv"
 	//"regexp"
-//	"strings"
+	"strings"
 )
 
 func applyComputation (x, y int, z string) { //related to topic 1 and 2
@@ -97,9 +97,21 @@ func primesNComposite (nums []int ) ([]int, []int) {
 			composites = append(composites, num)
 		}
 	}
-	return primes, composites
+	return primes, composites 
 	}
 
+func identifyDatatypes (str string){
+	strSlice := strings.Split(str, " ")
+	for _ , char := range strSlice {
+		if c, err := strconv.Atoi(char); err == nil{
+			fmt.Printf("Char: %v  DataType: %T\n", char, c)
+		} else if c, err := strconv.ParseFloat(char, 64); err == nil{
+			fmt.Printf("Char: %v  DataType: %T\n", char, c)
+		} else {
+			fmt.Printf("Char: %v  DataType: %T\n", char, char)
+		}
+	}
+}
 
 func main() {
 	fmt.Println()
@@ -119,4 +131,6 @@ func main() {
 	fmt.Println(sumUsingRange(numsArray[:]))
 	p,c := primesNComposite(numsArray[:])
 	fmt.Println("primes from num:", p, "\ncomposites from num:", c)
+	testString := "60 B d 45.2"
+	identifyDatatypes(testString)
 }

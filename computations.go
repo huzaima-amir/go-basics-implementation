@@ -1,16 +1,18 @@
 package main
+
 // used: switch cases, for loops, "while" loops, explored different function implementations regarding data handling, conversion, computation.
 import (
-//	"errors"
+	//	"errors"
 	"fmt"
-	//"math"
+	"math"
 	// 	"math/rand"
-//	"strconv"
+//		"strconv"
 	//"regexp"
+//	"strings"
 )
 
-func applyComputation (x, y float64, z string) { //related to topic 1 and 2
-	result := 0.0
+func applyComputation (x, y int, z string) { //related to topic 1 and 2
+	result := 0
 	switch {
 	case z == "x":
 		result = x * y
@@ -18,8 +20,8 @@ func applyComputation (x, y float64, z string) { //related to topic 1 and 2
 		result = x + y
 	case z == "-":
 		result = x - y
-	//case z == "%": // check operations for float64
-	//	result = x % y
+	case z == "%":
+		result = x % y
 	case z == "/":
 		result = x / y
 	}
@@ -39,13 +41,72 @@ func computeFactorial (x int) {
 	}
 }
 
-//func parseExpression(){}
+func sumUsingRange (nums []int) int {
+	sum := 0
+	for _ , n := range nums {
+		sum += n
+	}
+	return sum
+}
+
+
+func isComposite (num int) bool{
+	composite :=  false
+	if num > 3 {
+		numSqrt := int(math.Sqrt(float64(num)))  
+		count := 0
+		for i := 2; i <= numSqrt ; i++ {
+			if num%i == 0{
+				count ++
+			}
+		}
+		if count > 0{
+				composite = true
+			}
+	}
+
+	return composite
+}
+
+func isPrime (num int) bool{
+	prime := false
+	if num <= 3{
+		prime = true
+	} else {
+		numSqrt := int(math.Sqrt(float64(num)))  
+		count := 0
+		for i := 2; i <= numSqrt ; i++ {
+			if num%i == 0{
+				count ++
+			}
+					}
+		if count == 0{
+				prime = true
+			}
+	}
+	return prime
+}
+
+func primesNComposite (nums []int ) ([]int, []int) {
+	var primes, composites [ ] int
+	for _, num := range nums{
+		if isPrime(num){
+			primes = append(primes, num)
+		}
+		if isComposite(num){
+			composites = append(composites, num)
+		}
+	}
+	return primes, composites
+	}
+
 
 func main() {
 	fmt.Println()
-	var f, x, y = 0, 0.0, 0.0
+	var f, x, y = 0, 0, 0
 	var z string
-    fmt.Println("Enter Number 1:")//using scan for easier testing
+	numsArray := [9]int {2,3,4,5,6,7,8,9,10}
+    fmt.Println("Enter Number 1:") //using scan for easier testing
 	fmt.Scan(&x) //because scan in go writes to variable itself, instead of returning new value and assigning its value to the variable.
 	fmt.Println("Enter Number 2:")
 	fmt.Scan(&y)
@@ -55,4 +116,7 @@ func main() {
 	fmt.Println("Enter Number to compute Factorial:")
 	fmt.Scan(&f)
 	computeFactorial(f)
+	fmt.Println(sumUsingRange(numsArray[:]))
+	p,c := primesNComposite(numsArray[:])
+	fmt.Println("primes from num:", p, "\ncomposites from num:", c)
 }

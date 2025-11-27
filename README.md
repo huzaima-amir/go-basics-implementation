@@ -13,6 +13,7 @@ Encompasses For(while) loops, if and else, switch conditions, and defer
 #### 3. More Types: structs, slices, and maps
 Encompasses pointers, structs, arrays, slices, range, maps and function closures.
 
-computations.go -> contains basic conversion and computation functions
+**computations.go** -> contains basic conversion and computation functions
 
-C3/connect3.go -> contains a connect 3 game simulation in console
+**C3/connect3.go** -> contains a connect 3 game simulation in console
+**GamesInterface** -> contains two go files with both game codes, and one main file to run both games.

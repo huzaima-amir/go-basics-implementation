@@ -68,7 +68,7 @@ func applyMove(P1,P2 Player, count int,board [][] string) { // to apply game mov
 }
 
 // Helpers for ending round loop:
-func checkRoundWinner(board [][]string, P1 *Player, P2 *Player) bool {
+func checkRoundWinner(board [][]string, P1, P2 *Player) bool {
     lines := [][]string{}
 	// verifying matches:
     // rows
@@ -118,7 +118,7 @@ type Player struct{
 	score int
 }
 
-func main(){
+func runConnect3() { // entire game
 	var n int  // amount of game rounds
 	P1 := Player{"", 0}
 	P2 := Player{"", 0}
@@ -127,7 +127,6 @@ func main(){
 
 	fmt.Println("Enter number of game rounds:")
 	fmt.Scan(&n)
-	//fmt.Println(createBoard(n))
 	fmt.Println("Enter Player 1 Symbol:")
 	fmt.Scan(&P1.symbol)
 	fmt.Println("Enter Player 2 Symbol:")
@@ -158,4 +157,8 @@ func main(){
 	}
 
 	fmt.Println("Game Over!\n", winner.symbol, "won, score:", winner.score)
+}
+
+func main(){
+	runConnect3()
 	}

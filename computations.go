@@ -2,7 +2,6 @@ package main
 
 // used: switch cases, for loops, "while" loops, explored different function implementations regarding data handling, conversion, computation.
 import (
-	//	"errors"
 	"fmt"
 	"math"
 	// 	"math/rand"
@@ -11,6 +10,17 @@ import (
 	"strings"
 )
 
+type CustomError struct {
+	Message string
+}
+
+func (e *CustomError) Error() string {
+	return fmt.Sprintf("Error: %s", e.Message)
+}
+
+func generateNegativeInputFactorialError() *CustomError{
+	return &CustomError {Message: "Negative number input, factorial not possible!"}
+}
 func applyComputation (x, y int, z string) { //related to topic 1 and 2
 	result := 0
 	switch {
@@ -37,7 +47,7 @@ func computeFactorial (x int) {
 	}
 	fmt.Println("Factorial of",x,"=",factorial)	
 	} else {
-		fmt.Println("ERROR: Negative number entered, factorial not possible.") // replace with go errors import funcs
+		fmt.Println(generateNegativeInputFactorialError())
 	}
 }
 

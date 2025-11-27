@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 )
+
 func createBoard() [][]string {
 	// slice of slices to represent game board
     board := make([][]string, 3)
@@ -31,6 +32,18 @@ type Coordinates struct {
 	x, y int
 }
 
+type CustomError struct{
+	Message string
+} 
+
+func (e *CustomError) Error() string {
+    return fmt.Sprintf("Error: %s", e.Message)
+}
+
+func generatePositionOccupancyError() *CustomError {
+	return &CustomError{ Message: "Position already occupied!",}
+}
+
 func applyMove(P1,P2 Player, count int,board [][] string) { // to apply game move to board
 	var currentPlayer Player
 	var c Coordinates
@@ -48,7 +61,7 @@ func applyMove(P1,P2 Player, count int,board [][] string) { // to apply game mov
 	if board[c.y - 1][c.x - 1] == "_" {
 		board[c.y - 1][c.x - 1] = currentPlayer.symbol
 	} else {
-		fmt.Println("Error! Position occupied.")
+		fmt.Println(generatePositionOccupancyError())
 		applyMove(P1,P2,count,board)
 	}
 	checkRoundWinner(board, &P1, &P2)
@@ -146,5 +159,3 @@ func main(){
 
 	fmt.Println("Game Over!\n", winner.symbol, "won, score:", winner.score)
 	}
-
-

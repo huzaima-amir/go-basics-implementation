@@ -8,7 +8,12 @@ import (
 		"strconv"
 	//"regexp"
 	"strings"
+	"testing"
 )
+
+func testComputation (t *testing.T){
+	//testing skeleton
+}
 
 type CustomError struct {
 	Message string
@@ -21,22 +26,24 @@ func (e *CustomError) Error() string {
 func generateNegativeInputFactorialError() *CustomError{
 	return &CustomError {Message: "Negative number input, factorial not possible!"}
 }
-func applyComputation (x, y int, z string) { //related to topic 1 and 2
-	result := 0
-	switch {
-	case z == "x":
+func applyComputation [T int | float64 ](x, y T, z string) T { //related to topic 1 and 2
+	var result T
+	switch z {
+	case "x":
 		result = x * y
-	case z == "+":
+	case "+":
 		result = x + y
-	case z == "-":
+	case "-":
 		result = x - y
-	case z == "%":
-		result = x % y
-	case z == "/":
+	//case z == "%":
+	//	result = x % y
+	case "/":
 		result = x / y
 	}
 
 	fmt.Println(x,z,y, "=",result)
+
+	return result
 }
 
 func computeFactorial (x int) {
@@ -125,16 +132,11 @@ func identifyDatatypes (str string){
 
 func main() {
 	fmt.Println()
-	var f, x, y = 0, 0, 0
-	var z string
+	var f = 0
 	numsArray := [9]int {2,3,4,5,6,7,8,9,10}
-    fmt.Println("Enter Number 1:") //using scan for easier testing
-	fmt.Scan(&x) //because scan in go writes to variable itself, instead of returning new value and assigning its value to the variable.
-	fmt.Println("Enter Number 2:")
-	fmt.Scan(&y)
-	fmt.Println("Enter math operator:")
-	fmt.Scan(&z)
-	applyComputation(x,y,z)
+	applyComputation(4.5,8.9,"x")
+	applyComputation(4,6,"-")
+
 	fmt.Println("Enter Number to compute Factorial:")
 	fmt.Scan(&f)
 	computeFactorial(f)

@@ -21,6 +21,9 @@ Encompasses Type paramters, Generic Types
 ### Concurrency:
 Encompasses goroutines, channels, range and close, select, sync.Mutex
 
+
+#### Directory:
+
 **computations.go** -> contains basic conversion and computation functions
 
 **C3/connect3.go** -> contains a connect 3 game simulation in console

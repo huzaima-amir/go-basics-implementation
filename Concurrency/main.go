@@ -5,6 +5,12 @@ import (
 	"sync"
 )
 
+
+
+// -------- Bank interface code from the Interfaces folder, updated to implement mutexes so that the 
+// balance cant be updated by multiple goroutines at once  -------------------------------
+
+
 type CustomError struct{
 	Message string
 } 
@@ -48,7 +54,7 @@ func (b *BankAccount) WithdrawCash(withdrawn float64){
 	if b.balance >= withdrawn {
 		b.balance -= withdrawn
 	} else {
-		fmt.Println(generateLowBalanceError()) //replace with error 
+		fmt.Println(generateLowBalanceError()) 
 	}
 }
 
@@ -79,19 +85,50 @@ func (b *BankAccount) CheckBalance() float64 {
 }
 
 
-// user events logging handled using channels:
+// user events logging handled using channels and mutexes:
+
+
+
+var (
+	signedIn bool   // checking if signed in, shared state
+	stateMu sync.Mutex  // mutex to protect events based 
+	// on whether user is signed in or not.
+)
+
 
 func generateUserEvent(n int, c chan bool){
 	var event string
+
+	stateMu.Lock()
+    defer stateMu.Unlock()
+
 	switch n{
 	case 1:
-		event = "User signed in"
+		if !signedIn {
+			signedIn = true
+			event = "User signed in"
+		} else {
+			event = "Sign in failed: already signed in" 
+		}
+		
 	case 2:
-		event = "User clicked button"
+		if signedIn {
+
+			event = "User clicked button"
+		} else {
+			event = "Click failed: must be signed in"
+		}
+		
 	case 3:
-		event = "User signed out"
+		if signedIn{
+			signedIn = false
+			event = "User signed out"
+		} else {
+			event = "Sign out failed: not signed in"
+		}
+		
 	}
-	fmt.Println(event)
+	fmt.Println(event) // "logging" the event after generation
 	c <- true
 }
 
@@ -100,12 +137,13 @@ func main() {
 	
 	go generateUserEvent(1, c)
 	go generateUserEvent(3, c)
-	go generateUserEvent(2, c)
+	go generateUserEvent(1,c)
+
 
 	<- c
 	<- c
 	<- c
-	fmt.Println("Events Logged.")
+	fmt.Println("Events Logged.") // final message shouldnt print out unless all events are done.
 
     account := &BankAccount{balance: 100}
 

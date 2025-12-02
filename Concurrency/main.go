@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
-
+	"sync"
 )
 
 type CustomError struct{
@@ -16,46 +15,6 @@ func (e *CustomError) Error() string {
 func generateLowBalanceError() *CustomError {
 	return &CustomError{ Message: "Low Balance!"}
 }
-
-// shapes as an interface:
-type Shapes interface {
-	Area()  float64
-	Perimeter()  float64
-	ShapeDetails() string
-}
-
-type Rectangle struct {
-	Length, Width float64 
-}
-
-type Circle struct {
-	radius float64
-}
-
-func (r *Rectangle) Area () float64{
-	return r.Length*r.Width
-}
-
-func (c *Circle) Area() float64 {
-	return math.Pi*c.radius*c.radius
-}
-
-func (r *Rectangle)Perimeter() float64 {
-	return 2*r.Length + 2*r.Width
-}
-
-func (c *Circle)Perimeter() float64 {
-	return 2*c.radius*math.Pi
-}
-
-func (r *Rectangle)ShapeDetails(){
-	fmt.Println("Rectangle with dimensions:", *r ,"has perimeter: ", r.Perimeter(), "and Area:", r.Area())
-}
-
-func (c *Circle)ShapeDetails(){
-	fmt.Println("Circle with radius:", c.radius, ", has perimeter:", c.Perimeter(), "and Area:", c.Area())
-}
-
 
 // "Bank" as an interface:
 type Bank interface {
@@ -70,16 +29,21 @@ type Bank interface {
 type BankAccount struct {
 	balance float64
 	debt bool //should be set to true if balance is in the neg
-
+	mu sync.Mutex
 }
 
 func (b *BankAccount) MakeTransaction(spent float64){
+	b.mu.Lock()
+    defer b.mu.Unlock()
 
 	b.balance -= spent
 	b.CheckDebt()
 }
 
 func (b *BankAccount) WithdrawCash(withdrawn float64){
+
+    b.mu.Lock()
+    defer b.mu.Unlock()
 
 	if b.balance >= withdrawn {
 		b.balance -= withdrawn
@@ -90,6 +54,9 @@ func (b *BankAccount) WithdrawCash(withdrawn float64){
 
 func (b *BankAccount) Deposit(deposited float64){
 
+	b.mu.Lock()
+    defer b.mu.Unlock()
+
 	b.balance += deposited
 	b.CheckDebt()
 }
@@ -99,20 +66,68 @@ func (b *BankAccount) CheckDebt() bool{
 	if b.balance < 0{
 		b.debt = true
 	}
+
 	return b.debt
 }
 
 func (b *BankAccount) CheckBalance() float64 {
+	b.mu.Lock()
+    defer b.mu.Unlock()
 
 	fmt.Println("Current Account Balance:", b.balance)
 	return b.balance
 }
 
-func main(){
-	var c = Circle{2}
-	c.ShapeDetails()
-	var r = Rectangle{4,5.6}
-	r.ShapeDetails()
+
+// user events logging handled using channels:
+
+func generateUserEvent(n int, c chan bool){
+	var event string
+	switch n{
+	case 1:
+		event = "User signed in"
+	case 2:
+		event = "User clicked button"
+	case 3:
+		event = "User signed out"
+	}
+	fmt.Println(event)
+	c <- true
+}
+
+func main() {
+	c := make(chan bool)
 	
+	go generateUserEvent(1, c)
+	go generateUserEvent(3, c)
+	go generateUserEvent(2, c)
+
+	<- c
+	<- c
+	<- c
+	fmt.Println("Events Logged.")
+
+    account := &BankAccount{balance: 100}
+
+    var wg sync.WaitGroup
+    wg.Add(3)
+
+    go func() {
+        defer wg.Done()
+        account.Deposit(50)
+    }()
+
+    go func() {
+        defer wg.Done()
+        account.MakeTransaction(30)
+    }()
+
+    go func() {
+        defer wg.Done()
+        account.WithdrawCash(20)
+    }()
+
+    wg.Wait()
+    account.CheckBalance()
 
 }

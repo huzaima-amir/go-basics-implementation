@@ -88,13 +88,14 @@ func checkRoundWinner(board [][]string, P1, P2 *Player) bool {
     // check each line
     for _, line := range lines {
         if line[0] != "_" && line[0] == line[1] && line[1] == line[2] {
-            if line[0] == P1.symbol {
-                P1.score++
-                fmt.Println("Round Winner:", P1.symbol)
-            } else if line[0] == P2.symbol {
-                P2.score++
-                fmt.Println("Round Winner:", P2.symbol)
-            }
+			switch line[0] {
+				case P1.symbol:
+					P1.score++
+					fmt.Println("Round Winner:", P1.symbol)
+				case P2.symbol:
+					P2.score++
+					fmt.Println("Round Winner:", P2.symbol)
+			}
             return true
         }
     }

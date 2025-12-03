@@ -10,7 +10,7 @@ import (
 // -------- Bank interface code from the Interfaces folder, updated to implement mutexes so that the 
 // balance cant be updated by multiple goroutines at once  -------------------------------
 
-
+// custom errors:
 type CustomError struct{
 	Message string
 } 
@@ -18,15 +18,25 @@ type CustomError struct{
 func (e *CustomError) Error() string {
     return fmt.Sprintf("Error: %s", e.Message)
 }
+
 func generateLowBalanceError() *CustomError {
 	return &CustomError{ Message: "Low Balance!"}
 }
 
+func generateDebtError() *CustomError {
+	return &CustomError{Message: "Account in debt! Transaction not possible."}
+}
+
+
+
+
+
 // "Bank" as an interface:
 type Bank interface {
-	MakeTransaction() //minus money from acc
-	WithdrawCash() //minus money in cash, should only work if theres no debt.
+	MakeTransaction() // minus money from acc, shouldnt work if there is debt on the acc, but can work if the amount paid is more than balance,
+	//  which will put the user in debt
 
+	WithdrawCash() //minus money in cash, should only work if withdrawal amount is less than or equal to balance
 	Deposit() //add money
 	CheckBalance() // returns current balance
 	CheckDebt() // sets debt true if balance is negative and returns debt amount, and nil if no debt
@@ -35,15 +45,21 @@ type Bank interface {
 type BankAccount struct {
 	balance float64
 	debt bool //should be set to true if balance is in the neg
-	mu sync.Mutex
+	mu sync.Mutex // to make sure balance is only accessed by 1 goroutine at a time
 }
 
 func (b *BankAccount) MakeTransaction(spent float64){
 	b.mu.Lock()
     defer b.mu.Unlock()
 
-	b.balance -= spent
-	b.CheckDebt()
+	if !b.CheckDebt(){ // only works if balance is positive
+		b.balance -= spent
+		fmt.Println("Transaction of", spent,"made.")
+	} else {
+		fmt.Println(generateDebtError())
+	}
+	b.CheckDebt() // may cause debt
+	b.CheckBalance()
 }
 
 func (b *BankAccount) WithdrawCash(withdrawn float64){
@@ -51,11 +67,15 @@ func (b *BankAccount) WithdrawCash(withdrawn float64){
     b.mu.Lock()
     defer b.mu.Unlock()
 
-	if b.balance >= withdrawn {
+	if b.balance >= withdrawn { // only works if balance is greater than or equal to withdrawal amount
 		b.balance -= withdrawn
+		fmt.Println("Amount of", withdrawn,"withdrawn.")
+
 	} else {
 		fmt.Println(generateLowBalanceError()) 
 	}
+	b.CheckDebt() //may cause debt
+	b.CheckBalance()
 }
 
 func (b *BankAccount) Deposit(deposited float64){
@@ -63,11 +83,17 @@ func (b *BankAccount) Deposit(deposited float64){
 	b.mu.Lock()
     defer b.mu.Unlock()
 
-	b.balance += deposited
-	b.CheckDebt()
+	b.balance += deposited // no extra conditions
+	b.CheckDebt() // may diminish debt
+	fmt.Println("Amount of", deposited,"deposited.")
+	b.CheckBalance()
 }
 
+
 func (b *BankAccount) CheckDebt() bool{
+	b.debt = false // not adding this earlier was causing errors in functionality of other functions where the 
+	// debt value was not registering as false even though initilaized account has false debt 
+	// --- check later(might be issue with handling of pointers)!!!
 
 	if b.balance < 0{
 		b.debt = true
@@ -89,7 +115,7 @@ func (b *BankAccount) CheckBalance() float64 {
 
 
 
-var (
+var ( 
 	signedIn bool   // checking if signed in, shared state
 	stateMu sync.Mutex  // mutex to protect events based 
 	// on whether user is signed in or not.
@@ -133,20 +159,21 @@ func generateUserEvent(n int, c chan bool){
 }
 
 func main() {
-	c := make(chan bool)
+	c := make(chan bool,4)  // check difference with buffered vs regular channel !!!
 	
-	go generateUserEvent(1, c)
+	go generateUserEvent(2, c)
 	go generateUserEvent(3, c)
-	go generateUserEvent(1,c)
+	go generateUserEvent(2, c)
+	go generateUserEvent(1, c)
 
+	<- c
 
-	<- c
-	<- c
-	<- c
 	fmt.Println("Events Logged.") // final message shouldnt print out unless all events are done.
 
     account := &BankAccount{balance: 100}
 
+
+	// reevaluate the following(issues with goroutines caused after additions in the functions)!!!
     var wg sync.WaitGroup
     wg.Add(3)
 

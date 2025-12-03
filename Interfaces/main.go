@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
-
+	//"time"
 )
 
 type CustomError struct{
@@ -14,7 +14,11 @@ func (e *CustomError) Error() string {
     return fmt.Sprintf("Error: %s", e.Message)
 }
 func generateLowBalanceError() *CustomError {
-	return &CustomError{ Message: "Low Balance!"}
+	return &CustomError{ Message: "Low Balance! Withdrawal not possible"}
+}
+
+func generateDebtError() *CustomError {
+	return &CustomError{Message: "Account in debt! Transaction not possible."}
 }
 
 // shapes as an interface:
@@ -59,9 +63,10 @@ func (c *Circle)ShapeDetails(){
 
 // "Bank" as an interface:
 type Bank interface {
-	MakeTransaction() //minus money from acc
-	WithdrawCash() //minus money in cash, should only work if theres no debt.
+	MakeTransaction() // minus money from acc, shouldnt work if there is debt on the acc, but can work if the amount paid is more than balance,
+	//  which will put the user in debt
 
+	WithdrawCash() //minus money in cash, should only work if withdrawal amount is less than or equal to balance
 	Deposit() //add money
 	CheckBalance() // returns current balance
 	CheckDebt() // sets debt true if balance is negative and returns debt amount, and nil if no debt
@@ -75,30 +80,44 @@ type BankAccount struct {
 
 func (b *BankAccount) MakeTransaction(spent float64){
 
-	b.balance -= spent
+	if !b.CheckDebt(){
+		b.balance -= spent
+		fmt.Println("Transaction of", spent,"made.")
+	} else {
+		fmt.Println(generateDebtError())
+	}
 	b.CheckDebt()
+	b.CheckBalance()
 }
+
 
 func (b *BankAccount) WithdrawCash(withdrawn float64){
 
 	if b.balance >= withdrawn {
 		b.balance -= withdrawn
+		fmt.Println("Amount of", withdrawn,"withdrawn.")
+
 	} else {
-		fmt.Println(generateLowBalanceError()) //replace with error 
+		fmt.Println(generateLowBalanceError())
 	}
+
+	b.CheckDebt()
+	b.CheckBalance()
 }
 
 func (b *BankAccount) Deposit(deposited float64){
 
 	b.balance += deposited
 	b.CheckDebt()
+	fmt.Println("Amount of", deposited,"deposited.")
+	b.CheckBalance()
 }
 
 func (b *BankAccount) CheckDebt() bool{
-
+	b.debt = false
 	if b.balance < 0{
 		b.debt = true
-	}
+	} 
 	return b.debt
 }
 
@@ -113,6 +132,16 @@ func main(){
 	c.ShapeDetails()
 	var r = Rectangle{4,5.6}
 	r.ShapeDetails()
-	
 
+	b := BankAccount{10.5,false}
+
+	b.MakeTransaction(110)
+	b.MakeTransaction(0.5)
+	b.Deposit(100)
+	b.WithdrawCash(5)
+	b.Deposit(50)
+	b.WithdrawCash(15)
+	b.MakeTransaction(20)
+	b.Deposit(150)
+	
 }

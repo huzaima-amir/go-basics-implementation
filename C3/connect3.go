@@ -58,8 +58,8 @@ func applyMove(P1,P2 Player, count int,board [][] string) { // to apply game mov
 	fmt.Println("y coordinate:")
 	fmt.Scan(&c.y) // y coordinate for input symbol
 
-	if board[c.y - 1][c.x - 1] == "_" {
-		board[c.y - 1][c.x - 1] = currentPlayer.symbol
+	if board[3 - c.y][c.x - 1] == "_" {
+		board[3 - c.y][c.x - 1] = currentPlayer.symbol
 	} else {
 		fmt.Println(generatePositionOccupancyError())
 		applyMove(P1,P2,count,board)

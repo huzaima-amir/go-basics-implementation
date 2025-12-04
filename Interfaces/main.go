@@ -134,7 +134,8 @@ func main(){
 	r.ShapeDetails()
 
 	b := BankAccount{10.5,false}
-
+	
+	b.CheckBalance()
 	b.MakeTransaction(110)
 	b.MakeTransaction(0.5)
 	b.Deposit(100)

@@ -28,9 +28,6 @@ func generateDebtError() *CustomError {
 }
 
 
-
-
-
 // "Bank" as an interface:
 type Bank interface {
 	MakeTransaction() // minus money from acc, shouldnt work if there is debt on the acc, but can work if the amount paid is more than balance,
@@ -91,10 +88,7 @@ func (b *BankAccount) Deposit(deposited float64){
 
 
 func (b *BankAccount) CheckDebt() bool{
-	b.debt = false // not adding this earlier was causing errors in functionality of other functions where the 
-	// debt value was not registering as false even though initilaized account has false debt 
-	// --- check later(might be issue with handling of pointers)!!!
-
+	b.debt = false
 	if b.balance < 0{
 		b.debt = true
 	}
@@ -103,6 +97,12 @@ func (b *BankAccount) CheckDebt() bool{
 }
 
 func (b *BankAccount) CheckBalance() float64 {
+
+	fmt.Println("Current Account Balance:", b.balance)  // to run within other functions (should lack mutex locks to prevent deadlocks)
+	return b.balance
+}
+
+func (b *BankAccount) CheckBalanceIndependant() float64 { // to run separately (with mutex locks)
 	b.mu.Lock()
     defer b.mu.Unlock()
 
@@ -110,10 +110,7 @@ func (b *BankAccount) CheckBalance() float64 {
 	return b.balance
 }
 
-
 // user events logging handled using channels and mutexes:
-
-
 
 var ( 
 	signedIn bool   // checking if signed in, shared state
@@ -172,24 +169,23 @@ func main() {
 
     account := &BankAccount{balance: 100}
 
-
 	// reevaluate the following(issues with goroutines caused after additions in the functions)!!!
     var wg sync.WaitGroup
     wg.Add(3)
 
     go func() {
-        defer wg.Done()
+     	defer wg.Done()
+		account.MakeTransaction(30)
+    }()
+   
+	go func() {
+     	defer wg.Done()
         account.Deposit(50)
     }()
 
-    go func() {
-        defer wg.Done()
-        account.MakeTransaction(30)
-    }()
-
-    go func() {
-        defer wg.Done()
-        account.WithdrawCash(20)
+	go func() {
+    	defer wg.Done()
+		account.WithdrawCash(10)
     }()
 
     wg.Wait()

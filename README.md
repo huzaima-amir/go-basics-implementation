@@ -16,7 +16,7 @@ Encompasses pointers, structs, arrays, slices, range, maps and function closures
 Encompasses methods, pointer receivers, pointer indirection, interfaces, type assertions and switches,  stringers, erros, readers, images
 
 ### Generics:
-Encompasses Type paramters, Generic Types
+Encompasses Type parameters, Generic Types
 
 ### Concurrency:
 Encompasses goroutines, channels, range and close, select, sync.Mutex
@@ -24,7 +24,7 @@ Encompasses goroutines, channels, range and close, select, sync.Mutex
 
 #### Directory:
 
-**computations.go** -> contains basic conversion and computation functions
+**computations.go** -> contains basic conversion and computation functions, generic functions
 
 **C3/connect3.go** -> contains a connect 3 game simulation in console
 

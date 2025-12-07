@@ -98,11 +98,11 @@ func (b *BankAccount) CheckDebt() bool{
 
 func (b *BankAccount) CheckBalance() float64 {
 
-	fmt.Println("Current Account Balance:", b.balance)  // to run within other functions (should lack mutex locks to prevent deadlocks)
+	fmt.Println("Current Account Balance:", b.balance)  // to call within other functions (should lack mutex locks to prevent deadlocks)
 	return b.balance
 }
 
-func (b *BankAccount) CheckBalanceIndependant() float64 { // to run separately (with mutex locks)
+func (b *BankAccount) CheckBalanceIndependant() float64 { // to call separately (with mutex locks)
 	b.mu.Lock()
     defer b.mu.Unlock()
 
@@ -111,6 +111,7 @@ func (b *BankAccount) CheckBalanceIndependant() float64 { // to run separately (
 }
 
 // user events logging handled using channels and mutexes:
+
 
 var ( 
 	signedIn bool   // checking if signed in, shared state
@@ -156,7 +157,7 @@ func generateUserEvent(n int, c chan bool){
 }
 
 func main() {
-	c := make(chan bool,4)  // check difference with buffered vs regular channel !!!
+	c := make(chan bool)  
 	
 	go generateUserEvent(2, c)
 	go generateUserEvent(3, c)
@@ -164,12 +165,14 @@ func main() {
 	go generateUserEvent(1, c)
 
 	<- c
+	<- c
+	<- c
+	<- c
 
 	fmt.Println("Events Logged.") // final message shouldnt print out unless all events are done.
 
     account := &BankAccount{balance: 100}
 
-	// reevaluate the following(issues with goroutines caused after additions in the functions)!!!
     var wg sync.WaitGroup
     wg.Add(3)
 

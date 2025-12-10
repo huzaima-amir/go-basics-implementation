@@ -4,6 +4,7 @@ import (
 	"time"
 	"gorm.io/gorm"
 	"database/models"
+  "fmt"
 )
 
 func createTask(db *gorm.DB, title,description string, deadline time.Time) uint { // creating new task - works
@@ -12,16 +13,39 @@ func createTask(db *gorm.DB, title,description string, deadline time.Time) uint 
   return task.ID
 }
 
-func startTask(db *gorm.DB, taskid uint){ // start task from pending block - works but need to figure out the id
-  z := time.Now()
-  db.Model(&models.Task{}).Where("id = ?", taskid).Update("started_at",z)
-  db.Model(&models.Task{}).Where("id = ?", taskid).Update("status","In Progress")
+func startTask(db *gorm.DB, taskid uint) error {
+    var task models.Task
+    if err := db.First(&task, taskid).Error; err != nil {
+        return err // task not found
+    }
+
+    // Only allow start if task is Pending
+    if task.Status == "Finished" {
+        return fmt.Errorf("cannot start a finished task")
+    }
+    if task.Status != "Pending" {
+        return fmt.Errorf("task already started")
+    }
+
+    task.StartedAt = time.Now()
+    task.Status = "In Progress"
+    return db.Save(&task).Error
 }
 
-func endTask(db *gorm.DB, taskid uint){ // end started task - !!!!!!! should only work if task has started
-  z := time.Now()
-  db.Model(&models.Task{}).Where("id = ?", taskid).Update("finished_at",z)
-  db.Model(&models.Task{}).Where("id = ?", taskid).Update("status","Finished")
+func endTask(db *gorm.DB, taskid uint) error {
+    var task models.Task
+    if err := db.First(&task, taskid).Error; err != nil {
+        return err // task not found
+    }
+
+    // Only allow end if task is In Progress
+    if task.Status != "In Progress" {
+        return fmt.Errorf("cannot end task that hasn't started")
+    }
+
+    task.FinishedAt = time.Now()
+    task.Status = "Finished"
+    return db.Save(&task).Error
 }
 
 func deleteTask(db *gorm.DB, taskid uint){ // remove task = works
@@ -29,5 +53,9 @@ func deleteTask(db *gorm.DB, taskid uint){ // remove task = works
 }
 
 func addSubtaskToTask(){ // adding subtask to the subtaskchecklist in a specific task
+  
+}
+
+func updateTaskOverdueStatus(){ //use hook(callback)
 
 }

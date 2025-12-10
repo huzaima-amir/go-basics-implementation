@@ -10,6 +10,7 @@ import (
 	//"golang.org/x/tools/go/analysis/passes/bools"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+    "database/models"
 )
 
 // connection to Database
@@ -30,5 +31,7 @@ func main() {
         log.Fatal(err)
     }
 	db.Begin()
+
+    db.AutoMigrate(&models.Task{},&models.Event{},&models.Tag{})
  }
 

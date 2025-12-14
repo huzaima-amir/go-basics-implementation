@@ -7,13 +7,13 @@ import (
   "fmt"
 )
 
-func createTask(db *gorm.DB, title,description string, deadline time.Time) uint { // creating new task - works
+func CreateTask(db *gorm.DB, title,description string, deadline time.Time) uint { // creating new task - works
   task := models.Task{Title: title,Description: description, Deadline: deadline, Status: "Pending"}
-  db.Select("ID","Title", "Description", "Deadline", "Status").Create(&task)
+  db.Create(&task)
   return task.ID
 }
 
-func startTask(db *gorm.DB, taskid uint) error {
+func StartTask(db *gorm.DB, taskid uint) error {
     var task models.Task
     if err := db.First(&task, taskid).Error; err != nil {
         return err // task not found
@@ -32,30 +32,53 @@ func startTask(db *gorm.DB, taskid uint) error {
     return db.Save(&task).Error
 }
 
-func endTask(db *gorm.DB, taskid uint) error {
+
+func EndTask(db *gorm.DB, taskid uint) error {
     var task models.Task
     if err := db.First(&task, taskid).Error; err != nil {
-        return err // task not found
+        return err // if task not found
     }
 
-    // Only allow end if task is In Progress
+    //only allow end if task is In Progress
     if task.Status != "In Progress" {
         return fmt.Errorf("cannot end task that hasn't started")
     }
 
+    //mark task as finished
     task.FinishedAt = time.Now()
     task.Status = "Finished"
-    return db.Save(&task).Error
+    if err := db.Save(&task).Error; err != nil {
+        return err
+    }
+
+    //masscomplete all subtasks for this task
+    if err := db.Model(&models.TaskSubTask{}).
+        Where("task_id = ?", taskid).
+        Update("checked", true).Error; err != nil {
+        return err
+    }
+
+    return nil
 }
 
-func deleteTask(db *gorm.DB, taskid uint){ // remove task = works
+
+func DeleteTask(db *gorm.DB, taskid uint){ 
   db.Delete(&models.Task{}, taskid)
 }
 
-func addSubtaskToTask(){ // adding subtask to the subtaskchecklist in a specific task
-  
+func AddSubtaskToTask(db *gorm.DB, pTaskID uint, title string) { // adding subtask to the subtaskchecklist in a specific task
+  subTask := models.TaskSubTask{Title:title, Checked: false, TaskID: pTaskID}
+  db.Create(&subTask)
 }
 
-func updateTaskOverdueStatus(){ //use hook(callback)
+func DeleteTaskSubtaskByTask(db *gorm.DB, taskID, subtaskID uint) error {
+    return db.Where("id = ? AND task_id = ?", subtaskID, taskID). //check parent first?
+        Delete(&models.TaskSubTask{}).Error
+}
 
+// to mark subtask as checked or unchecked:
+func ToggleTaskSubtaskByTask(db *gorm.DB, taskID, subtaskID uint, checked bool) error {
+    return db.Model(&models.TaskSubTask{}).
+        Where("id = ? AND task_id = ?", subtaskID, taskID).
+        Update("checked", checked).Error
 }

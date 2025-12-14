@@ -1,16 +1,17 @@
 package main
 
 import (
-//	"database/sql"
 	//	"fmt"
 	//"errors"
+	//"fmt"
+	//"database/handlers"
+	"database/models"
+//	"fmt"
 	"log"
 	//"time"
- 
-	//"golang.org/x/tools/go/analysis/passes/bools"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-    "database/models"
 )
 
 // connection to Database
@@ -24,7 +25,6 @@ func connectToPostgreSQL() (*gorm.DB, error) {
     return db, nil
 }
 
-
 func main() {
     db, err := connectToPostgreSQL()
     if err != nil {
@@ -32,6 +32,8 @@ func main() {
     }
 	db.Begin()
 
-    db.AutoMigrate(&models.Task{},&models.Event{},&models.Tag{})
+   db.AutoMigrate(&models.Task{},&models.Tag{})
+
+    
  }
 
